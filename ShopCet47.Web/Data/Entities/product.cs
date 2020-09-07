@@ -8,7 +8,8 @@ namespace ShopCet47.Web.Data.Entities
         public int Id { get; set; }
 
 
-
+        [Required]
+        [MaxLength(50, ErrorMessage = "The field{0} only can contain a maximum {1} characters")]
         public string Name { get; set; }
 
 
@@ -21,15 +22,15 @@ namespace ShopCet47.Web.Data.Entities
 
 
         [Display(Name = "Last Purcharse")]
-        public DateTime LastPurchase { get; set; }
+        public DateTime? LastPurchase { get; set; }
 
 
         [Display(Name = "LastSale")]
-        public DateTime LastSale { get; set; }
+        public DateTime? LastSale { get; set; }
 
 
         [Display(Name = "IsAvailable")]
-        public string IsAvailable { get; set; }
+        public bool IsAvailable { get; set; }
 
 
         [DisplayFormat(DataFormatString = "{0:N2}", ApplyFormatInEditMode = false)] 
