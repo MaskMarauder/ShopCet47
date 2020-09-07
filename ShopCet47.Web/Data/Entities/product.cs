@@ -14,7 +14,7 @@ namespace ShopCet47.Web.Data.Entities
 
 
         [DisplayFormat(DataFormatString = "{0:C2}", ApplyFormatInEditMode = false)]
-        public string Price { get; set; }
+        public decimal Price { get; set; }
 
 
         [Display(Name = "Image")]
@@ -34,6 +34,6 @@ namespace ShopCet47.Web.Data.Entities
 
 
         [DisplayFormat(DataFormatString = "{0:N2}", ApplyFormatInEditMode = false)] 
-        public string Stock { get; set; }
+        public double Stock { get; set; }
     }
 }
