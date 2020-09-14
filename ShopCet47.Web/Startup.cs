@@ -49,7 +49,8 @@ namespace ShopCet47.Web
 
             services.AddTransient<SeedDb>();
 
-            services.AddScoped<IRepository, Repository>();
+            services.AddScoped<IProductsRepository, ProductRepository>();
+            services.AddScoped<ICountryRepository, CountryRepository>();
 
             services.Configure<CookiePolicyOptions>(options =>
             {
