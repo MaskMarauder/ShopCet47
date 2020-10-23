@@ -1,36 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ShopCet47.Web.Data;
 using ShopCet47.Web.Data.Entities;
 using ShopCet47.Web.Data.Repositories;
 using ShopCet47.Web.Helpers;
 using ShopCet47.Web.Models;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace ShopCet47.Web.Controllers
 {
+
     public class ProductsController : Controller
     {
-        private readonly IProductsRepository _productsRepository;
+        private readonly IProductRepository _productRepository;
         private readonly IUserHelper _userHelper;
 
-        public ProductsController(IProductsRepository productsRepository, IUserHelper userHelper)
+        public ProductsController(IProductRepository productRepository, IUserHelper userHelper)
         {
-            _productsRepository = productsRepository;
+            _productRepository = productRepository;
             _userHelper = userHelper;
         }
-    
+
 
         // GET: Products
         public IActionResult Index()
         {
-            return View(_productsRepository.GetAll());
+            return View(_productRepository.GetAll());
         }
+
+
 
         // GET: Products/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -40,7 +40,7 @@ namespace ShopCet47.Web.Controllers
                 return NotFound();
             }
 
-            var product = await _productsRepository.GetByIdAsync(id.Value);
+            var product = await _productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -49,34 +49,38 @@ namespace ShopCet47.Web.Controllers
             return View(product);
         }
 
+
+        [Authorize(Roles = "Admin")]
         // GET: Products/Create
         public IActionResult Create()
         {
             return View();
         }
 
+
+
+
         // POST: Products/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Price,ImageFile,LastPurchase,LastSale,IsAvailable,Stock")] ProductViewModel view)
+        public async Task<IActionResult> Create(ProductViewModel view)
         {
             if (ModelState.IsValid)
             {
                 var path = string.Empty;
 
-                if(view.ImageFile != null && view.ImageFile.Length > 0)
+                if (view.ImageFile != null && view.ImageFile.Length > 0)
                 {
                     var guid = Guid.NewGuid().ToString();
                     var file = $"{guid}.jpg";
 
-                    path = Path.Combine(
-                        Directory.GetCurrentDirectory(),
+                    path = Path.Combine(Directory.GetCurrentDirectory(),
                         "wwwroot\\images\\Products",
                         file);
 
-                    using(var stream = new FileStream(path, FileMode.Create))
+                    using (var stream = new FileStream(path, FileMode.Create))
                     {
                         await view.ImageFile.CopyToAsync(stream);
                     }
@@ -85,9 +89,8 @@ namespace ShopCet47.Web.Controllers
                 }
 
                 var product = this.ToProduct(view, path);
-
-                product.User = await _userHelper.GetUserByEmailAsync("rafael.santos@cinel.pt");
-                await _productsRepository.CreateAsync(product);
+                product.User = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
+                await _productRepository.CreateAsync(product);
                 return RedirectToAction(nameof(Index));
             }
             return View(view);
@@ -105,10 +108,11 @@ namespace ShopCet47.Web.Controllers
                 Name = view.Name,
                 Price = view.Price,
                 Stock = view.Stock,
-                User = view.User,
+                User = view.User
             };
         }
 
+        [Authorize(Roles = "Admin")]
         // GET: Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -117,14 +121,13 @@ namespace ShopCet47.Web.Controllers
                 return NotFound();
             }
 
-            var product = await _productsRepository.GetByIdAsync(id.Value);
+            var product = await _productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
             }
 
             var view = this.ToProductViewModel(product);
-
             return View(view);
         }
 
@@ -133,24 +136,28 @@ namespace ShopCet47.Web.Controllers
             return new ProductViewModel
             {
                 Id = product.Id,
-                ImageUrl = product.ImageUrl,
                 IsAvailable = product.IsAvailable,
                 LastPurchase = product.LastPurchase,
                 LastSale = product.LastSale,
+                ImageUrl = product.ImageUrl,
                 Name = product.Name,
                 Price = product.Price,
                 Stock = product.Stock,
-                User = product.User,
+                User = product.User
             };
-        }
 
+        }
         // POST: Products/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,ImageFile,LastPurchase,LastSale,IsAvailable,Stock")] ProductViewModel view)
+        public async Task<IActionResult> Edit(int id, ProductViewModel view)
         {
+            if (id != view.Id)
+            {
+                return NotFound();
+            }
 
             if (ModelState.IsValid)
             {
@@ -160,35 +167,29 @@ namespace ShopCet47.Web.Controllers
 
                     if (view.ImageFile != null && view.ImageFile.Length > 0)
                     {
-                        path = string.Empty;
 
-                        if (view.ImageFile != null && view.ImageFile.Length > 0)
+                        var guid = Guid.NewGuid().ToString();
+                        var file = $"{guid}.jpg";
+
+                        path = Path.Combine(Directory.GetCurrentDirectory(),
+                        "wwwroot\\images\\Products",
+                        file);
+
+                        using (var stream = new FileStream(path, FileMode.Create))
                         {
-                            var guid = Guid.NewGuid().ToString();
-                            var file = $"{guid}.jpg";
-
-                            path = Path.Combine(
-                                Directory.GetCurrentDirectory(),
-                                "wwwroot\\images\\Products",
-                                file);
-
-                            using (var stream = new FileStream(path, FileMode.Create))
-                            {
-                                await view.ImageFile.CopyToAsync(stream);
-                            }
-
-                            path = $"~/images/Products/{file}";
+                            await view.ImageFile.CopyToAsync(stream);
                         }
+
+                        path = $"~/images/Products/{file}";
                     }
 
                     var product = this.ToProduct(view, path);
-
-                    product.User = await _userHelper.GetUserByEmailAsync("rafael.santos@cinel.pt");
-                    await _productsRepository.UpdateAsync(product);
+                    product.User = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
+                    await _productRepository.UpdateAsync(product);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (! await _productsRepository.ExistAsync(view.Id))
+                    if (!await _productRepository.ExistAsync(view.Id))
                     {
                         return NotFound();
                     }
@@ -199,9 +200,10 @@ namespace ShopCet47.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(view );
+            return View(view);
         }
 
+        [Authorize(Roles = "Admin")]
         // GET: Products/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -210,7 +212,7 @@ namespace ShopCet47.Web.Controllers
                 return NotFound();
             }
 
-            var product = await _productsRepository.GetByIdAsync(id.Value);
+            var product = await _productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -219,13 +221,14 @@ namespace ShopCet47.Web.Controllers
             return View(product);
         }
 
+
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product =await _productsRepository.GetByIdAsync(id);
-            await _productsRepository.DeleteAsync(product);
+            var product = await _productRepository.GetByIdAsync(id);
+            await _productRepository.DeleteAsync(product);
             return RedirectToAction(nameof(Index));
         }
     }

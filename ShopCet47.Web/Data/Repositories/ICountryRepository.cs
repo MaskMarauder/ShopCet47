@@ -2,7 +2,7 @@
 
 namespace ShopCet47.Web.Data.Repositories
 {
-    interface ICountryRepository : IGenericRepository<Country>
+    public interface ICountryRepository : IGenericRepository<Country>
     {
     }
 }

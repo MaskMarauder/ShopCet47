@@ -6,7 +6,6 @@ namespace ShopCet47.Web.Data.Repositories
     {
         public CountryRepository(DataContext context) : base(context)
         {
-
         }
     }
 }

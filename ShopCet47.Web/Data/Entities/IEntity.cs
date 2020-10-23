@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ShopCet47.Web.Data.Entities
 {
@@ -9,6 +6,8 @@ namespace ShopCet47.Web.Data.Entities
     {
         int Id { get; set; }
 
-        //bool WasDeleted { get; set; }
+
+        //bool WasDeleted { get; set};  
+
     }
 }
