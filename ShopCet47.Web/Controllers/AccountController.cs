@@ -1,16 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using ShopCet47.Web.Data.Entities;
 using ShopCet47.Web.Helpers;
 using ShopCet47.Web.Models;
-using ShopCet47.Web.Models;
-using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ShopCet47.Web.Controllers

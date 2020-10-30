@@ -179,7 +179,7 @@ namespace ShopCet47.Web.Migrations
 
                     b.Property<string>("Firstname");
 
-                    b.Property<string>("Lasttname");
+                    b.Property<string>("Lastname");
 
                     b.Property<bool>("LockoutEnabled");
 
