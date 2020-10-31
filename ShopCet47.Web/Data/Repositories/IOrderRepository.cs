@@ -7,5 +7,7 @@ namespace ShopCet47.Web.Data.Repositories
     public interface IOrderRepository : IGenericRepository<Order>
     {
         Task<IQueryable<Order>> GetOrderAsync(string username);
+
+        Task<IQueryable<OrderDetailTemp>> GetDetailTempAsync(string username);
     }
 }
